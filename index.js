@@ -7,7 +7,7 @@ var findPath = require('./dijkstra'),
 
 module.exports = PathFinder;
 
-function PathFinder(graph, options) {    
+function PathFinder(graph, options) {
     options = options || {};
 
     if (!graph.compactedVertices) {
@@ -18,7 +18,7 @@ function PathFinder(graph, options) {
     this._keyFn = options.keyFn || function(c) {
         return c.join(',');
     };
-    this._precision = options.precision || 1e-5;
+    this._precision = options.precision || 1e5;
     this._options = options;
 
     if (Object.keys(this._graph.compactedVertices).filter(function(k) { return k !== 'edgeData'; }).length === 0) {
@@ -28,8 +28,8 @@ function PathFinder(graph, options) {
 
 PathFinder.prototype = {
     findPath: function(a, b) {
-        var start = this._keyFn(roundCoord(a.geometry.coordinates, this._precision)),
-            finish = this._keyFn(roundCoord(b.geometry.coordinates, this._precision));
+        var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision)),
+            finish = this._keyFn(roundCoord.coordToInt(b.geometry.coordinates, this._precision));
 
         // We can't find a path if start or finish isn't in the
         // set of non-compacted vertices
@@ -50,11 +50,10 @@ PathFinder.prototype = {
                     if (i > 0) {
                         cs = cs.concat(this._graph.compactedCoordinates[vs[i - 1]][v]);
                     }
-
-                    return cs;
+                    return cs.map(roundCoord.coordToFloat, this._precision);
                 }.bind(this), []).concat([this._graph.sourceVertices[finish]]),
                 weight: weight,
-                edgeDatas: this._graph.compactedEdges 
+                edgeDatas: this._graph.compactedEdges
                     ? path.reduce(function buildEdgeData(eds, v, i, vs) {
                         if (i > 0) {
                             eds.push({

@@ -36,12 +36,12 @@ function topology(geojson, options) {
     var keyFn = options.keyFn || function defaultKeyFn(c) {
             return c.join(',');
         },
-        precision = options.precision || 1e-5;
+        precision = options.precision || 1e5;
 
     var lineStrings = geoJsonFilterFeatures(geojson, isLineString);
     var explodedLineStrings = explode(lineStrings);
     var vertices = explodedLineStrings.features.reduce(function buildTopologyVertices(cs, f, i, fs) {
-            var rc = roundCoord(f.geometry.coordinates, precision);
+            var rc = roundCoord.coordToInt(f.geometry.coordinates, precision);
             cs[keyFn(rc)] = f.geometry.coordinates;
 
             if (i % 1000 === 0 && options.progress) {
@@ -53,8 +53,8 @@ function topology(geojson, options) {
         edges = geoJsonReduce(lineStrings, function buildTopologyEdges(es, f, i, fs) {
             f.geometry.coordinates.forEach(function buildLineStringEdges(c, i, cs) {
                 if (i > 0) {
-                    var k1 = keyFn(roundCoord(cs[i - 1], precision)),
-                        k2 = keyFn(roundCoord(c, precision));
+                    var k1 = keyFn(roundCoord.coordToInt(cs[i - 1], precision)),
+                        k2 = keyFn(roundCoord.coordToInt(c, precision));
                     es.push([k1, k2, f.properties]);
                 }
             });

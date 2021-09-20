@@ -133,7 +133,7 @@ test('can make oneway network', function(t) {
                 return {
                     forward: distance(point(a), point(b))
                 };
-            }        
+            }
         }),
         path = pathfinder.findPath(point([0, 0]), point([1, 1]));
 
