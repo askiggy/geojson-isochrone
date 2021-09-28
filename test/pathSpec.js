@@ -91,6 +91,20 @@ test('can find path (complex)', function(t) {
     t.end();
 });
 
+test('can generate walk isochrone', function(t) {
+    var pathfinder = new PathFinder(geojson),
+        isochrone = pathfinder.isochrone(point([8.44460166,59.48947469]), [10]);
+
+    t.ok(isochrone, 'has isochone');
+    t.ok(isochrone.walk, 'isochrone has walk');
+    t.ok(path.walk.times, 'has times');
+    t.ok(path.walk.times['10'], 'has 10min');
+    t.ok(path.walk.times['10'].geometry, 'has 10min geom');
+    // t.equal(path.path.length, 220, 'path has expected length');
+    // t.ok(Math.abs(path.weight - 6.3751) < 5e-5, 'path has expected weight');
+    t.end();
+});
+
 test('can\'t find path (advent of code)', function(t) {
     try {
         new PathFinder(require('./advent24.json'), {
@@ -149,7 +163,6 @@ test('can make oneway network', function(t) {
 
 test('can recreate PathFinder from serialized data', function(t) {
     var pathfinder = new PathFinder(geojson);
-
     pathfinder = new PathFinder(pathfinder.serialize());
     var path = pathfinder.findPath(point([8.44460166,59.48947469]), point([8.44651,59.513920000000006]));
 

@@ -1,6 +1,6 @@
 'use strict';
 
-var explode = require('@turf/explode'),
+var explode = require('@turf/explode').default || require('@turf/explode'),
     roundCoord = require('./round-coord');
 
 module.exports = topology;

@@ -1,6 +1,6 @@
 'use strict';
 
-var findPath = require('./dijkstra'),
+var traverse = require('./dijkstra'),
     preprocess = require('./preprocessor'),
     compactor = require('./compactor'),
     roundCoord = require('./round-coord');
@@ -40,7 +40,7 @@ PathFinder.prototype = {
         var phantomStart = this._createPhantom(start);
         var phantomEnd = this._createPhantom(finish);
 
-        var path = findPath(this._graph.compactedVertices, start, finish);
+        var path = traverse.findPath(this._graph.compactedVertices, start, finish);
 
         if (path) {
             var weight = path[0];
@@ -50,7 +50,8 @@ PathFinder.prototype = {
                     if (i > 0) {
                         cs = cs.concat(this._graph.compactedCoordinates[vs[i - 1]][v]);
                     }
-                    return cs.map(roundCoord.coordToFloat, this._precision);
+                    return cs
+                    // return cs.map(roundCoord.coordToFloat, this._precision);
                 }.bind(this), []).concat([this._graph.sourceVertices[finish]]),
                 weight: weight,
                 edgeDatas: this._graph.compactedEdges
@@ -71,6 +72,20 @@ PathFinder.prototype = {
 
         this._removePhantom(phantomStart);
         this._removePhantom(phantomEnd);
+    },
+
+    isochrone: function(a, mode, times) {
+
+        var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision));
+
+        // We can't find a path if start or finish isn't in the
+        // set of non-compacted vertices
+        if (!this._graph.vertices[start]) {
+            return null;
+        }
+
+        traverse.costAll(this._graph.vertices, start, 40, 2, 18)
+
     },
 
     serialize: function() {
