@@ -93,7 +93,7 @@ test('can find path (complex)', function(t) {
 
 test('can generate walk isochrone', function(t) {
     var pathfinder = new PathFinder(geojson),
-        isochrone = pathfinder.isochrone(point([8.44460166,59.48947469]), "walk", [10]);
+        isochrone = pathfinder.isochrone(point([8.44460166,59.48947469]), [10]);
 
     t.ok(isochrone, 'has isochone');
     t.equal(isochrone.features.length, 1);

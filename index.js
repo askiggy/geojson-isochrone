@@ -56,7 +56,6 @@ PathFinder.prototype = {
                         cs = cs.concat(this._graph.compactedCoordinates[vs[i - 1]][v]);
                     }
                     return cs
-                    // return cs.map(roundCoord.coordToFloat, this._precision);
                 }.bind(this), []).concat([this._graph.sourceVertices[finish]]),
                 weight: weight,
                 edgeDatas: this._graph.compactedEdges
@@ -79,7 +78,7 @@ PathFinder.prototype = {
         this._removePhantom(phantomEnd);
     },
 
-    isochrone: function(a, mode, times) {
+    isochrone: function(a, times) {
         var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision));
 
         // We can't find a path if start or finish isn't in the
