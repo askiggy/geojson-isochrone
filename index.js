@@ -3,9 +3,14 @@
 var traverse = require('./dijkstra'),
     preprocess = require('./preprocessor'),
     compactor = require('./compactor'),
-    roundCoord = require('./round-coord');
+    roundCoord = require('./round-coord'),
+    concaveman = require('concaveman');
 
 module.exports = PathFinder;
+
+function toCoords(p) {
+    return roundCoord.coordToFloat(p.split(','), 1e5)
+}
 
 function PathFinder(graph, options) {
     options = options || {};
@@ -75,7 +80,6 @@ PathFinder.prototype = {
     },
 
     isochrone: function(a, mode, times) {
-
         var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision));
 
         // We can't find a path if start or finish isn't in the
@@ -83,9 +87,26 @@ PathFinder.prototype = {
         if (!this._graph.vertices[start]) {
             return null;
         }
+        var phantomStart = this._createPhantom(start);
+        var maxTime = times[times.length -1]
+        var costs = traverse.costAll(this._graph.compactedVertices, start, maxTime)
+        var thresholdPoints =  Array.from({length: times.length }, _ => [a.geometry.coordinates])
+        Object.keys(costs).forEach(cost => {
+            times.forEach((t, i) =>{
+                if (costs[cost] < t) {
+                    thresholdPoints[i].push(toCoords(cost))
+                }
+            })
+        })
 
-        traverse.costAll(this._graph.vertices, start, 40, 2, 18)
+        var fc = {type: "FeatureCollection", features: []}
 
+        fc.features = times.map((t,i) => {
+            return {type: "Feature", geometry:{type: "Polygon", coordinates:[concaveman(thresholdPoints[i])]}, properties:{value: t}}
+        })
+
+        this._removePhantom(phantomStart);
+        return fc
     },
 
     serialize: function() {
