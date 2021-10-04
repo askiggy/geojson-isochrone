@@ -25,6 +25,7 @@ function PathFinder(graph, options) {
     };
     this._precision = options.precision || 1e5;
     this._options = options;
+    this._concavity = options.concavity || 2
 
     if (Object.keys(this._graph.compactedVertices).filter(function(k) { return k !== 'edgeData'; }).length === 0) {
         throw new Error('Compacted graph contains no forks (topology has no intersections).');
@@ -99,9 +100,9 @@ PathFinder.prototype = {
         })
 
         var fc = {type: "FeatureCollection", features: []}
-
+        var concavity = this._concavity;
         fc.features = times.map((t,i) => {
-            return {type: "Feature", geometry:{type: "Polygon", coordinates:[concaveman(thresholdPoints[i])]}, properties:{value: t}}
+            return {type: "Feature", geometry:{type: "Polygon", coordinates:[concaveman(thresholdPoints[i], concavity)]}, properties:{value: t}}
         })
 
         this._removePhantom(phantomStart);
