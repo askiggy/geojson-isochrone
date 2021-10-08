@@ -36,20 +36,20 @@ function findPath(graph, start, end, maxCost) {
 function costAll(graph, start, maxCost) {
     var costs = {};
     costs[start] = 0;
-    var initialState = [0, [start], start];
+    var initialState = [0, start];
     var queue = new Queue([initialState], function(a, b) { return a[0] - b[0]; });
 
     while (queue.length) {
         var state = queue.pop();
         var cost = state[0];
-        var node = state[2];
+        var node = state[1];
 
         var neighbours = graph[node];
         Object.keys(neighbours).forEach(function(n) {
             var newCost = cost + neighbours[n];
             if (newCost < maxCost && (!(n in costs) || newCost < costs[n])) {
                 costs[n] = newCost;
-                var newState = [newCost, state[1].concat([n]), n];
+                var newState = [newCost, n];
                 queue.push(newState);
             }
         });
@@ -58,7 +58,56 @@ function costAll(graph, start, maxCost) {
     return costs
 }
 
+function connectivity(graph) {
+    var verticesLeft = Object.assign({}, graph)
+    var connectedGraphsItr = 0;
+    var connectedGraphs = [[]];
+    var initialState = [0, Object.keys(verticesLeft)[0]];
+    var queue = new Queue([initialState], function(a, b) { return a[0] - b[0]; });
+
+    while (queue.length) {
+        var state = queue.pop();
+        var cost = state[0];
+        var node = state[1];
+        delete verticesLeft[node];
+        connectedGraphs[connectedGraphsItr].push(node)
+
+        var neighbours = graph[node];
+        Object.keys(neighbours).forEach(function(n) {
+            var newCost = cost + neighbours[n];
+            if ( (n in verticesLeft)) {
+                var newState = [newCost, n];
+                queue.push(newState);
+            }
+        });
+        if (queue.length === 0 && Object.keys(verticesLeft).length > 0) {
+            connectedGraphsItr +=1
+            connectedGraphs[connectedGraphsItr] = []
+            queue.push([0, Object.keys(verticesLeft)[0]]);
+
+        }
+    }
+
+    // find the biggest connected graph
+    var maxItr =0
+    for(var i =0; i < connectedGraphs.length; i++) {
+        if (connectedGraphs[i].length > connectedGraphs[maxItr].length) {
+            maxItr = i
+        }
+    }
+    // delete vertices that arent part of the biggest connected graph
+    for(var i =0; i < connectedGraphs.length; i++) {
+        if (i === maxItr) continue;
+        for(var j =0; j < connectedGraphs[i].length; j++) {
+            delete graph[connectedGraphs[i][j]]
+        }
+    }
+    return graph
+}
+
+
 module.exports = {
     findPath: findPath,
-    costAll: costAll
+    costAll: costAll,
+    connectivity: connectivity
 }

@@ -4,7 +4,8 @@ var topology = require('./topology'),
     compactor = require('./compactor'),
     distance = require('@turf/distance').default,
     roundCoord = require('./round-coord'),
-    point = require('turf-point');
+    point = require('turf-point'),
+    traverse = require('./dijkstra');
 
 module.exports = function preprocess(graph, options) {
     options = options || {};
@@ -65,13 +66,19 @@ module.exports = function preprocess(graph, options) {
         return g;
     }, {edgeData: {}, vertices: {}});
 
-    var compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
+    // drop vertices from unconnected graphs
+    traverse.connectivity(graph.vertices)
+
+    var compact = {}
+    if (options.compact === undefined || options.compact) {
+        compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
+    }
 
     return {
         vertices: graph.vertices,
         edgeData: graph.edgeData,
         sourceVertices: topo.vertices,
-        compactedVertices: compact.graph,
+        compactedVertices: compact.graph || graph.vertices,
         compactedCoordinates: compact.coordinates,
         compactedEdges: options.edgeDataReduceFn ? compact.reducedEdges : null
     };

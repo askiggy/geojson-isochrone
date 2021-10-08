@@ -79,7 +79,7 @@ PathFinder.prototype = {
         this._removePhantom(phantomEnd);
     },
 
-    isochrone: function(a, times) {
+    isochrone: function(a, costContours) {
         var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision));
 
         // We can't find a path if start or finish isn't in the
@@ -88,11 +88,11 @@ PathFinder.prototype = {
             return null;
         }
         var phantomStart = this._createPhantom(start);
-        var maxTime = times[times.length -1]
-        var costs = traverse.costAll(this._graph.compactedVertices, start, maxTime)
-        var thresholdPoints =  Array.from({length: times.length }, _ => [a.geometry.coordinates])
+        var maxCost = costContours[costContours.length -1]
+        var costs = traverse.costAll(this._graph.compactedVertices, start, maxCost)
+        var thresholdPoints =  Array.from({length: costContours.length }, _ => [a.geometry.coordinates])
         Object.keys(costs).forEach(cost => {
-            times.forEach((t, i) =>{
+            costContours.forEach((t, i) =>{
                 if (costs[cost] < t) {
                     thresholdPoints[i].push(toCoords(cost))
                 }
@@ -101,8 +101,9 @@ PathFinder.prototype = {
 
         var fc = {type: "FeatureCollection", features: []}
         var concavity = this._concavity;
-        fc.features = times.map((t,i) => {
-            return {type: "Feature", geometry:{type: "Polygon", coordinates:[concaveman(thresholdPoints[i], concavity)]}, properties:{value: t}}
+        fc.features = costContours.map((t,i) => {
+            var poly = concaveman(thresholdPoints[i], concavity)
+            return {type: "Feature", geometry:{type: "Polygon", coordinates:[poly]}, properties:{value: t}}
         })
 
         this._removePhantom(phantomStart);
