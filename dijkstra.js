@@ -58,49 +58,77 @@ function costAll(graph, start, maxCost) {
     return costs
 }
 
+
+function eachNode(graph, start, func) {
+    var initialState = [0, start];
+    var queue = new Queue([initialState], function(a, b) { return a[0] - b[0]; });
+    var visited = new Set()
+    while (queue.length) {
+        var state = queue.pop();
+        var cost = state[0];
+        var node = state[1];
+        visited.add(node)
+        var neighbours = graph[node];
+        if (func) func(graph, node);
+        Object.keys(neighbours).forEach(function(n) {
+            var newCost = cost + neighbours[n];
+            if (!(visited.has(n))) {
+                var newState = [newCost, n];
+                queue.push(newState);
+
+            }
+        });
+    }
+    return visited
+}
+
+
 function connectivity(graph) {
-    var verticesLeft = Object.assign({}, graph)
+    var verticesLeft = new Map(Object.keys(graph).map(k => [k,true]));
     var connectedGraphsItr = 0;
-    var connectedGraphs = [[]];
-    var initialState = [0, Object.keys(verticesLeft)[0]];
+    var iter = verticesLeft.keys()
+    var initValue = iter.next().value
+    var connectedGraphs = [[initValue, 0]];
+    var initialState = [0, initValue];
     var queue = new Queue([initialState], function(a, b) { return a[0] - b[0]; });
 
     while (queue.length) {
         var state = queue.pop();
         var cost = state[0];
         var node = state[1];
-        delete verticesLeft[node];
-        connectedGraphs[connectedGraphsItr].push(node)
+
+        connectedGraphs[connectedGraphsItr][1] +=1
 
         var neighbours = graph[node];
         Object.keys(neighbours).forEach(function(n) {
             var newCost = cost + neighbours[n];
-            if ( (n in verticesLeft)) {
+            if (verticesLeft.has(n)) {
                 var newState = [newCost, n];
                 queue.push(newState);
+                verticesLeft.delete(n);
             }
         });
-        if (queue.length === 0 && Object.keys(verticesLeft).length > 0) {
+        if (queue.length === 0 && verticesLeft.size > 0) {
             connectedGraphsItr +=1
-            connectedGraphs[connectedGraphsItr] = []
-            queue.push([0, Object.keys(verticesLeft)[0]]);
-
+            initValue = iter.next().value
+            connectedGraphs[connectedGraphsItr] = [initValue, 0]
+            queue.push([0, initValue]);
         }
     }
 
     // find the biggest connected graph
     var maxItr =0
     for(var i =0; i < connectedGraphs.length; i++) {
-        if (connectedGraphs[i].length > connectedGraphs[maxItr].length) {
+        if (connectedGraphs[i][1] > connectedGraphs[maxItr][1]) {
             maxItr = i
         }
     }
-    // delete vertices that arent part of the biggest connected graph
     for(var i =0; i < connectedGraphs.length; i++) {
         if (i === maxItr) continue;
-        for(var j =0; j < connectedGraphs[i].length; j++) {
-            delete graph[connectedGraphs[i][j]]
-        }
+        var allNodes = eachNode(graph, connectedGraphs[i][0])
+        allNodes.forEach(node => {
+            delete graph[node];
+        })
     }
     return graph
 }

@@ -21,6 +21,7 @@ function PathFinder(graph, options) {
 
     this._graph = graph;
     this._keyFn = options.keyFn || function(c) {
+        // return c.map(n => n.toString(36)).join(',');
         return c.join(',');
     };
     this._precision = options.precision || 1e5;

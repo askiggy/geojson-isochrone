@@ -34,6 +34,7 @@ function isLineString(f) {
 function topology(geojson, options) {
     options = options || {};
     var keyFn = options.keyFn || function defaultKeyFn(c) {
+            // return c.map(n => n.toString(36)).join(',');
             return c.join(',');
         },
         precision = options.precision || 1e5;
