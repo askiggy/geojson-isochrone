@@ -4,7 +4,9 @@ var traverse = require('./dijkstra'),
     preprocess = require('./preprocessor'),
     compactor = require('./compactor'),
     roundCoord = require('./round-coord'),
-    concaveman = require('concaveman');
+    concaveman = require('concaveman'),
+    KDBush = require("kdbush").default || require("kdbush"),
+    geokdbush = require("geokdbush");
 
 module.exports = PathFinder;
 
@@ -20,6 +22,11 @@ function PathFinder(graph, options) {
     }
 
     this._graph = graph;
+    var coords = Object.keys(this._graph.vertices).map(v => {
+        return roundCoord.coordToFloat(v.split(','), 1e5)
+    })
+
+    this._nodeIndex = new KDBush(coords);
     this._keyFn = options.keyFn || function(c) {
         // return c.map(n => n.toString(36)).join(',');
         return c.join(',');
@@ -81,7 +88,14 @@ PathFinder.prototype = {
     },
 
     isochrone: function(a, costContours) {
-        var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision));
+        var nearestStart = geokdbush.around(
+            this._nodeIndex,
+            a.geometry.coordinates[0],
+            a.geometry.coordinates[1],
+            1
+        );
+
+        var start = this._keyFn(roundCoord.coordToInt(nearestStart[0], this._precision));
 
         // We can't find a path if start or finish isn't in the
         // set of non-compacted vertices
