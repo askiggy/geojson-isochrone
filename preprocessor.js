@@ -4,7 +4,8 @@ var topology = require('./topology'),
     compactor = require('./compactor'),
     distance = require('@turf/distance').default,
     roundCoord = require('./round-coord'),
-    point = require('turf-point');
+    point = require('turf-point'),
+    traverse = require('./dijkstra');
 
 module.exports = function preprocess(graph, options) {
     options = options || {};
@@ -25,21 +26,15 @@ module.exports = function preprocess(graph, options) {
         var a = edge[0],
             b = edge[1],
             props = edge[2],
-            w = weightFn(topo.vertices[a], topo.vertices[b], props),
+            w = weightFn(roundCoord.toCoords(a), roundCoord.toCoords(b), props),
             makeEdgeList = function makeEdgeList(node) {
-                if (!g.vertices[node]) {
-                    g.vertices[node] = {};
-                    if (options.edgeDataReduceFn) {
-                        g.edgeData[node] = {};
-                    }
+                if (!g.vertices.has(node)) {
+                    g.vertices.set(node, new Map());
                 }
             },
             concatEdge = function concatEdge(startNode, endNode, weight) {
-                var v = g.vertices[startNode];
-                v[endNode] = weight;
-                if (options.edgeDataReduceFn) {
-                    g.edgeData[startNode][endNode] = options.edgeDataReduceFn(options.edgeDataSeed, props);
-                }
+                var v = g.vertices.get(startNode);
+                v.set(endNode, weight);
             };
 
         if (w) {
@@ -63,16 +58,17 @@ module.exports = function preprocess(graph, options) {
         }
 
         return g;
-    }, {edgeData: {}, vertices: {}});
+    }, {edgeData: new Map(), vertices: new Map()});
 
-    var compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
+    // drop vertices from unconnected graphs
+    traverse.connectivity(graph.vertices)
+    var compact = {}
+    if (options.compact === undefined || options.compact) {
+        compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
+    }
 
     return {
         vertices: graph.vertices,
-        edgeData: graph.edgeData,
-        sourceVertices: topo.vertices,
-        compactedVertices: compact.graph,
-        compactedCoordinates: compact.coordinates,
-        compactedEdges: options.edgeDataReduceFn ? compact.reducedEdges : null
+        compactedVertices: compact.graph || graph.vertices,
     };
 };

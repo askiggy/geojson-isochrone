@@ -1,9 +1,9 @@
 {
-  "name": "geojson-path-finder",
-  "version": "1.5.2",
-  "description": "Find shortest path through a network of GeoJSON",
-  "repository": "git@github.com:perliedman/geojson-path-finder.git",
-  "homepage": "https://github.com/perliedman/geojson-path-finder",
+  "name": "@askiggy/geojson-isochrone",
+  "version": "1.0.0",
+  "description": "Generate an isochrone based on geojson routing graph",
+  "repository": "git@github.com:askiggy/geojson-isochrone.git",
+  "homepage": "https://github.com/askiggy/geojson-isochrone",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -11,11 +11,13 @@
   "scripts": {
     "test": "tap test/*.js | tap-spec"
   },
-  "author": "Per Liedman <per@liedman.net>",
   "license": "ISC",
   "dependencies": {
     "@turf/distance": "^6.0.1",
-    "@turf/explode": "^5.1.0",
+    "@turf/meta": "^6.5.0",
+    "concaveman": "^1.2.1",
+    "geokdbush": "^1.1.0",
+    "kdbush": "^3.0.0",
     "tap": "^14.2.2",
     "tap-spec": "^5.0.0",
     "tinyqueue": "^2.0.0",
