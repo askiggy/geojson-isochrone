@@ -33,29 +33,26 @@ function isLineString(f) {
 
 function topology(geojson, options) {
     options = options || {};
-    var keyFn = options.keyFn || function defaultKeyFn(c) {
-            // return c.map(n => n.toString(36)).join(',');
-            return c.join(',');
-        },
+    var keyFn = options.keyFn || roundCoord.toKey,
         precision = options.precision || 1e5;
 
     var lineStrings = geoJsonFilterFeatures(geojson, isLineString);
-    var explodedLineStrings = explode(lineStrings);
-    var vertices = explodedLineStrings.features.reduce(function buildTopologyVertices(cs, f, i, fs) {
-            var rc = roundCoord.coordToInt(f.geometry.coordinates, precision);
-            cs[keyFn(rc)] = f.geometry.coordinates;
-
-            if (i % 1000 === 0 && options.progress) {
-                options.progress('topo:vertices', i, fs.length);
-            }
-
-            return cs;
-        }, {}),
-        edges = geoJsonReduce(lineStrings, function buildTopologyEdges(es, f, i, fs) {
+    // var explodedLineStrings = explode(lineStrings);
+//     var vertices = explodedLineStrings.features.reduce(function buildTopologyVertices(cs, f, i, fs) {
+//             var rc = roundCoord.coordToInt(f.geometry.coordinates, precision);
+//             cs.set(keyFn(rc), f.geometry.coordinates);
+//
+//             if (i % 1000 === 0 && options.progress) {
+//                 options.progress('topo:vertices', i, fs.length);
+//             }
+//
+//             return cs;
+//         }, new Map()),
+   var edges = geoJsonReduce(lineStrings, function buildTopologyEdges(es, f, i, fs) {
             f.geometry.coordinates.forEach(function buildLineStringEdges(c, i, cs) {
                 if (i > 0) {
-                    var k1 = keyFn(roundCoord.coordToInt(cs[i - 1], precision)),
-                        k2 = keyFn(roundCoord.coordToInt(c, precision));
+                    var k1 = keyFn(cs[i - 1]),
+                        k2 = keyFn(c);
                     es.push([k1, k2, f.properties]);
                 }
             });
@@ -68,7 +65,7 @@ function topology(geojson, options) {
         }, []);
 
     return {
-        vertices: vertices,
+        // vertices: vertices,
         edges: edges
     };
 }

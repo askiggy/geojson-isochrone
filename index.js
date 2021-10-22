@@ -10,10 +10,6 @@ var traverse = require('./dijkstra'),
 
 module.exports = PathFinder;
 
-function toCoords(p) {
-    return roundCoord.coordToFloat(p.split(','), 1e5)
-}
-
 function PathFinder(graph, options) {
     options = options || {};
 
@@ -22,28 +18,26 @@ function PathFinder(graph, options) {
     }
 
     this._graph = graph;
-    var coords = Object.keys(this._graph.vertices).map(v => {
-        return roundCoord.coordToFloat(v.split(','), 1e5)
+    var coords = []
+    this._graph.vertices.forEach((value, key) => {
+        coords.push(roundCoord.toCoords(key))
     })
 
     this._nodeIndex = new KDBush(coords);
-    this._keyFn = options.keyFn || function(c) {
-        // return c.map(n => n.toString(36)).join(',');
-        return c.join(',');
-    };
+    this._keyFn = options.keyFn || roundCoord.toKey;
     this._precision = options.precision || 1e5;
     this._options = options;
     this._concavity = options.concavity || 2
 
-    if (Object.keys(this._graph.compactedVertices).filter(function(k) { return k !== 'edgeData'; }).length === 0) {
-        throw new Error('Compacted graph contains no forks (topology has no intersections).');
-    }
+    // if (Object.keys(this._graph.compactedVertices).filter(function(k) { return k !== 'edgeData'; }).length === 0) {
+    //     throw new Error('Compacted graph contains no forks (topology has no intersections).');
+    // }
 }
 
 PathFinder.prototype = {
     findPath: function(a, b) {
-        var start = this._keyFn(roundCoord.coordToInt(a.geometry.coordinates, this._precision)),
-            finish = this._keyFn(roundCoord.coordToInt(b.geometry.coordinates, this._precision));
+        var start = this._keyFn(a.geometry.coordinates),
+            finish = this._keyFn(b.geometry.coordinates);
 
         // We can't find a path if start or finish isn't in the
         // set of non-compacted vertices
@@ -88,28 +82,23 @@ PathFinder.prototype = {
     },
 
     isochrone: function(a, costContours) {
+        // console.log(`isochrone start - mem heap used: ${process.memoryUsage().heapUsed}`)
         var nearestStart = geokdbush.around(
             this._nodeIndex,
             a.geometry.coordinates[0],
             a.geometry.coordinates[1],
             1
         );
-
-        var start = this._keyFn(roundCoord.coordToInt(nearestStart[0], this._precision));
-
-        // We can't find a path if start or finish isn't in the
-        // set of non-compacted vertices
-        if (!this._graph.vertices[start]) {
-            return null;
-        }
-        var phantomStart = this._createPhantom(start);
+        var start = this._keyFn(nearestStart[0]);
+        // var phantomStart = this._createPhantom(start);
         var maxCost = costContours[costContours.length -1]
         var costs = traverse.costAll(this._graph.compactedVertices, start, maxCost)
+        // console.log(`isochrone cost all - mem heap used: ${process.memoryUsage().heapUsed}`)
         var thresholdPoints =  Array.from({length: costContours.length }, _ => [a.geometry.coordinates])
         Object.keys(costs).forEach(cost => {
             costContours.forEach((t, i) =>{
                 if (costs[cost] < t) {
-                    thresholdPoints[i].push(toCoords(cost))
+                    thresholdPoints[i].push(roundCoord.toCoords(cost))
                 }
             })
         })
@@ -121,7 +110,7 @@ PathFinder.prototype = {
             return {type: "Feature", geometry:{type: "Polygon", coordinates:[poly]}, properties:{value: t}}
         })
 
-        this._removePhantom(phantomStart);
+        // this._removePhantom(phantomStart);
         return fc
     },
 
