@@ -21,7 +21,6 @@ module.exports = function preprocess(graph, options) {
         // Graph is a preprocessed topology
         topo = graph;
     }
-    // console.log(topo)
 
     var graph = topo.edges.reduce(function buildGraph(g, edge, i, es) {
         var a = edge[0],
@@ -31,17 +30,11 @@ module.exports = function preprocess(graph, options) {
             makeEdgeList = function makeEdgeList(node) {
                 if (!g.vertices.has(node)) {
                     g.vertices.set(node, new Map());
-                    // if (options.edgeDataReduceFn) {
-                    //     g.edgeData[node] = {};
-                    // }
                 }
             },
             concatEdge = function concatEdge(startNode, endNode, weight) {
                 var v = g.vertices.get(startNode);
                 v.set(endNode, weight);
-                // if (options.edgeDataReduceFn) {
-                //     g.edgeData[startNode][endNode] = options.edgeDataReduceFn(options.edgeDataSeed, props);
-                // }
             };
 
         if (w) {
@@ -66,11 +59,9 @@ module.exports = function preprocess(graph, options) {
 
         return g;
     }, {edgeData: new Map(), vertices: new Map()});
-    // console.log(`preprocess before connectivity - mem heap used: ${process.memoryUsage().heapUsed}`)
+
     // drop vertices from unconnected graphs
-    // console.log(graph.vertices)
     traverse.connectivity(graph.vertices)
-    // console.log(`preprocess after connectivity - mem heap used: ${process.memoryUsage().heapUsed}`)
     var compact = {}
     if (options.compact === undefined || options.compact) {
         compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
@@ -78,10 +69,6 @@ module.exports = function preprocess(graph, options) {
 
     return {
         vertices: graph.vertices,
-        // edgeData: graph.edgeData,
-        // sourceVertices: topo.vertices,
         compactedVertices: compact.graph || graph.vertices,
-        // compactedCoordinates: compact.coordinates,
-        // compactedEdges: options.edgeDataReduceFn ? compact.reducedEdges : null
     };
 };

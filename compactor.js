@@ -11,7 +11,7 @@ function findNextEnd(prev, v, vertices, ends, vertexCoords, edgeData, trackIncom
         coordinates = [],
         path = [],
         reducedEdge = options.edgeDataSeed;
-        
+
     if (options.edgeDataReduceFn) {
         reducedEdge = options.edgeDataReduceFn(reducedEdge, edgeData[v][prev]);
     }
@@ -65,7 +65,7 @@ function compactNode(k, vertices, ends, vertexCoords, edgeData, trackIncoming, o
                 result.coordinates[neighbor.vertex] = [vertexCoords[k]].concat(neighbor.coordinates);
                 result.reducedEdges[neighbor.vertex] = neighbor.reducedEdge;
             }
-            if (trackIncoming && 
+            if (trackIncoming &&
                 !isNaN(reverseWeight) && (!result.incomingEdges[neighbor.vertex] || result.incomingEdges[neighbor.vertex] > reverseWeight)) {
                 result.incomingEdges[neighbor.vertex] = reverseWeight;
                 var coordinates = [vertexCoords[k]].concat(neighbor.coordinates);
