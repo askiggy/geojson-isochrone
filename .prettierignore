@@ -1,0 +1,5 @@
+# Ignore artifacts:
+test/fixtures/
+
+# Ignore all HTML files:
+*.json
