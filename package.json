@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tap test/*.js | tap-spec"
+    "test": "tape test/*.test.js"
   },
   "license": "ISC",
   "dependencies": {
@@ -18,10 +18,10 @@
     "concaveman": "^1.2.1",
     "geokdbush": "^1.1.0",
     "kdbush": "^3.0.0",
-    "tap": "^14.2.2",
-    "tap-spec": "^5.0.0",
     "tinyqueue": "^2.0.0",
     "turf-point": "^2.0.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "tape": "^5.3.1"
+  }
 }

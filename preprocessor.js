@@ -1,25 +1,24 @@
 'use strict';
 
 var topology = require('./topology'),
-    compactor = require('./compactor'),
     distance = require('@turf/distance').default,
     roundCoord = require('./round-coord'),
     point = require('turf-point'),
     traverse = require('./dijkstra');
 
-module.exports = function preprocess(graph, options) {
+module.exports = function preprocess(input, options) {
     options = options || {};
     var weightFn = options.weightFn || function defaultWeightFn(a, b) {
             return distance(point(a), point(b));
         },
         topo;
 
-    if (graph.type === 'FeatureCollection') {
+    if (input.type === 'FeatureCollection') {
         // Graph is GeoJSON data, create a topology from it
-        topo = topology(graph, options);
-    } else if (graph.edges) {
+        topo = topology(input, options);
+    } else if (input.edges) {
         // Graph is a preprocessed topology
-        topo = graph;
+        topo = input;
     }
 
     var graph = topo.edges.reduce(function buildGraph(g, edge, i, es) {
@@ -61,14 +60,11 @@ module.exports = function preprocess(graph, options) {
     }, {edgeData: new Map(), vertices: new Map()});
 
     // drop vertices from unconnected graphs
-    traverse.connectivity(graph.vertices)
-    var compact = {}
-    if (options.compact === undefined || options.compact) {
-        compact = compactor.compactGraph(graph.vertices, topo.vertices, graph.edgeData, options);
+    if (graph.vertices.size > 0) {
+        traverse.connectivity(graph.vertices)
     }
 
     return {
-        vertices: graph.vertices,
-        compactedVertices: compact.graph || graph.vertices,
+        vertices: graph.vertices
     };
 };

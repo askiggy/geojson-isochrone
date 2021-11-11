@@ -2,7 +2,6 @@
 
 var traverse = require('./dijkstra'),
     preprocess = require('./preprocessor'),
-    compactor = require('./compactor'),
     roundCoord = require('./round-coord'),
     concaveman = require('concaveman'),
     KDBush = require("kdbush").default || require("kdbush"),
@@ -13,7 +12,7 @@ module.exports = Isochrone;
 function Isochrone(graph, options) {
     options = options || {};
 
-    if (!graph.compactedVertices) {
+    if (!graph.vertices) {
         graph = preprocess(graph, options);
     }
 
@@ -40,7 +39,7 @@ Isochrone.prototype = {
         );
         var start = this._keyFn(nearestStart[0]);
         var maxCost = costContours[costContours.length -1]
-        var costs = traverse.costAll(this._graph.compactedVertices, start, maxCost)
+        var costs = traverse.costAll(this._graph.vertices, start, maxCost)
         var thresholdPoints =  Array.from({length: costContours.length }, _ => [a.geometry.coordinates])
         Object.keys(costs).forEach(cost => {
             costContours.forEach((t, i) =>{
