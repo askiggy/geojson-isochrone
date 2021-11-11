@@ -1,5 +1,8 @@
 var Queue = require("tinyqueue").default || require("tinyqueue");
 
+// percentage of overall nodes a disconnected graph must contain to avoid deletion
+const GRAPH_SIZE_THRESHOLD = 0.2;
+
 function costAll(graph, start, maxCost) {
   var costs = {};
   costs[start] = 0;
@@ -95,17 +98,11 @@ function connectivity(graph) {
     }
   }
 
-  // find the biggest connected graph
-  var maxItr = 0;
+  // re-traverse disconnected graphs and delete those
+  // nodes from the graph if they arent at least 20% of total nodes.
+  var totalGraphNodes = graph.size;
   for (var i = 0; i < connectedGraphs.length; i++) {
-    if (connectedGraphs[i][1] > connectedGraphs[maxItr][1]) {
-      maxItr = i;
-    }
-  }
-  // re-traverse the small disconnected graphs and delete those
-  // nodes from the graph
-  for (var i = 0; i < connectedGraphs.length; i++) {
-    if (i === maxItr) continue;
+    if (connectedGraphs[i][1] / totalGraphNodes > GRAPH_SIZE_THRESHOLD) continue;
     var allNodes = eachNode(graph, connectedGraphs[i][0]);
     allNodes.forEach((node) => {
       graph.delete(node);
@@ -114,7 +111,7 @@ function connectivity(graph) {
   }
 
   // clean up graph partition marker
-  graph.forEach((value, key) => {
+  graph.forEach((value, _) => {
     value.delete("gp");
   });
 
