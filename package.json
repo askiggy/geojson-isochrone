@@ -9,7 +9,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tape test/*.test.js"
+    "test": "tape test/*.test.js",
+    "ci": "npm run fmt-check && npm run test",
+    "fmt": "npx prettier --write .",
+    "fmt-check": "npx prettier --check ."
   },
   "license": "ISC",
   "dependencies": {
@@ -22,6 +25,7 @@
     "turf-point": "^2.0.1"
   },
   "devDependencies": {
+    "prettier": "^2.4.1",
     "tape": "^5.3.1"
   }
 }
