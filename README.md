@@ -72,4 +72,4 @@ that are associated with this feature, and should return either:
 - an object with two properties: `forward` and `backward`; in this case,
   `forward` denotes the cost of going from `a` to `b`, and
   `backward` the cost of going from `b` to `a`; setting to a number less than or equal to
-  `0`,  will prevent taking that direction, the segment will be a oneway.
+  `0`, will prevent taking that direction, the segment will be a oneway.
