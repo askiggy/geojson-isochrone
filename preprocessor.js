@@ -63,7 +63,6 @@ module.exports = function preprocess(input, options) {
     },
     { edgeData: new Map(), vertices: new Map() }
   );
-
   // drop vertices from unconnected graphs
   if (graph.vertices.size > 0) {
     traverse.connectivity(graph.vertices);
