@@ -18,6 +18,7 @@ function costAll(graph, start, maxCost) {
 
     var neighbours = graph.get(node);
     neighbours.forEach((value, key) => {
+      if (value <= 0) return;
       var newCost = cost + value;
       if (newCost < maxCost && (!(key in costs) || newCost < costs[key])) {
         costs[key] = newCost;
@@ -26,7 +27,6 @@ function costAll(graph, start, maxCost) {
       }
     });
   }
-
   return costs;
 }
 
@@ -41,7 +41,6 @@ function eachNode(graph, start) {
     var state = queue.pop();
     var cost = state[0];
     var node = state[1];
-
     var neighbours = graph.get(node);
     neighbours.forEach(function (value, key) {
       if (key === "gp") return;

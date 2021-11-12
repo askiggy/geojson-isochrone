@@ -43,10 +43,10 @@ module.exports = function preprocess(input, options) {
         makeEdgeList(a);
         makeEdgeList(b);
         if (w instanceof Object) {
-          if (w.forward) {
+          if (w.forward !== undefined) {
             concatEdge(a, b, w.forward);
           }
-          if (w.backward) {
+          if (w.backward !== undefined) {
             concatEdge(b, a, w.backward);
           }
         } else {
@@ -63,7 +63,6 @@ module.exports = function preprocess(input, options) {
     },
     { edgeData: new Map(), vertices: new Map() }
   );
-
   // drop vertices from unconnected graphs
   if (graph.vertices.size > 0) {
     traverse.connectivity(graph.vertices);
