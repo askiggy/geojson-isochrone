@@ -43,10 +43,10 @@ module.exports = function preprocess(input, options) {
         makeEdgeList(a);
         makeEdgeList(b);
         if (w instanceof Object) {
-          if (w.forward) {
+          if (w.forward  !== undefined) {
             concatEdge(a, b, w.forward);
           }
-          if (w.backward) {
+          if (w.backward !== undefined) {
             concatEdge(b, a, w.backward);
           }
         } else {

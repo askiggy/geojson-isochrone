@@ -71,6 +71,5 @@ that are associated with this feature, and should return either:
   to be the same going from `a` to `b` as going from `b` to `a`
 - an object with two properties: `forward` and `backward`; in this case,
   `forward` denotes the cost of going from `a` to `b`, and
-  `backward` the cost of going from `b` to `a`; setting either
-  to `0`, `null` or `undefined` will prevent taking that direction,
-  the segment will be a oneway.
+  `backward` the cost of going from `b` to `a`; setting to a number less than or equal to
+  `0`,  will prevent taking that direction, the segment will be a oneway.
